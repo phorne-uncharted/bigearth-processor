@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"runtime"
 
-	"github.com/phorne-uncharted/bigearth-processir/model"
+	"github.com/phorne-uncharted/bigearth-processor/model"
 	"github.com/pkg/errors"
 	log "github.com/unchartedsoftware/plog"
 	"github.com/urfave/cli"
