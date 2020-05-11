@@ -47,8 +47,6 @@ func main() {
 		}
 
 		source := c.String("source")
-		destination := c.String("destination")
-		sample := c.Float64("sample")
 		firstOnly := c.Bool("first-only")
 
 		err := processFolder(source, firstOnly)
@@ -64,7 +62,7 @@ func main() {
 }
 
 func processFolder(folder string, firstOnly bool) error {
-	log.Infof("processing folder '%s' (first only: %v)", folder)
+	log.Infof("processing folder '%s' (first only: %v)", folder, firstOnly)
 	captures, err := ioutil.ReadDir(folder)
 	if err != nil {
 		return errors.Wrapf(err, "unable to read contents of '%s'", folder)

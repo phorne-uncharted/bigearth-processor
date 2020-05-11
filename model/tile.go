@@ -71,7 +71,6 @@ func (t *Tile) LoadMetadata() error {
 func (t *Tile) LoadImages() error {
 	// read the folder from the tile name
 	tileFolder := t.GetCompletePath()
-	log.Infof("load tile found in '%s'", tileFolder)
 
 	// read the files in the tile folder
 	imageFiles, err := ioutil.ReadDir(tileFolder)
