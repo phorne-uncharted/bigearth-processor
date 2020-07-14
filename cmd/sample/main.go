@@ -52,6 +52,10 @@ func main() {
 			Name:  "first-only",
 			Usage: "If true, only the first label will be used",
 		},
+		cli.BoolFlag{
+			Name:  "single-only",
+			Usage: "If true, only consider tiles with one label",
+		},
 	}
 	app.Action = func(c *cli.Context) error {
 		if c.String("source") == "" {
@@ -65,8 +69,9 @@ func main() {
 		destination := c.String("destination")
 		sample := c.Float64("sample")
 		firstOnly := c.Bool("first-only")
+		singleOnly := c.Bool("single-only")
 
-		err := processFolder(source, destination, sample, firstOnly)
+		err := processFolder(source, destination, sample, firstOnly, singleOnly)
 		if err != nil {
 			log.Errorf("%v", err)
 			return cli.NewExitError(errors.Cause(err), 2)
@@ -78,16 +83,17 @@ func main() {
 	app.Run(os.Args)
 }
 
-func processFolder(folder string, destinationRoot string, sample float64, firstOnly bool) error {
+func processFolder(folder string, destinationRoot string, sample float64, firstOnly bool, singleOnly bool) error {
 	os.MkdirAll(destinationRoot, os.ModePerm)
 
-	log.Infof("processing folder '%s' with sample rate %f (first only: %v)", folder, sample, firstOnly)
+	log.Infof("processing folder '%s' with sample rate %f (first only: %v, single only: %v)", folder, sample, firstOnly, singleOnly)
 	captures, err := ioutil.ReadDir(folder)
 	if err != nil {
 		return errors.Wrapf(err, "unable to read contents of '%s'", folder)
 	}
 	log.Infof("read %d captures", len(captures))
 
+	count := 0
 	for _, capture := range captures {
 		if rand.Float64() < sample {
 			tile := model.NewTile(folder, capture.Name())
@@ -97,12 +103,21 @@ func processFolder(folder string, destinationRoot string, sample float64, firstO
 			}
 
 			labels := tile.Metadata.Labels
+			if singleOnly && len(labels) != 1 {
+				continue
+			}
+
 			if firstOnly {
 				labels = labels[0:1]
 			}
-			err = copyCapture(sourceFolder, destinationRoot, labels)
+			err = copyCapture(path.Join(folder, capture.Name()), destinationRoot, labels)
 			if err != nil {
 				return err
+			}
+
+			count++
+			if count%10000 == 0 {
+				log.Infof("processed %d", count)
 			}
 		}
 	}
